@@ -2,21 +2,35 @@ document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
   const getData = (url, callback) => {
-    const request = new XMLHttpRequest();
-    request.open('GET', url);
-    request.send();
-
-    request.addEventListener('readystatechange', () => {
-      if (request.readyState !== 4) return;
-
-      if (request.status === 200) {
-        const response = JSON.parse(request.response);
-        callback(response);
-      } else {
-        console.log(new Error('Eror:' + request.status));
-      }
-    });
+    fetch(url)
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error(response.statusText);
+      })
+      .then(callback)
+      .catch((err) => {
+        console.log(err);
+      });
   };
+
+  // const getData = (url, callback) => {
+  //   const request = new XMLHttpRequest();
+  //   request.open('GET', url);
+  //   request.send();
+
+  //   request.addEventListener('readystatechange', () => {
+  //     if (request.readyState !== 4) return;
+
+  //     if (request.status === 200) {
+  //       const response = JSON.parse(request.response);
+  //       callback(response);
+  //     } else {
+  //       console.log(new Error('Eror:' + request.status));
+  //     }
+  //   });
+  // };
 
   const tabs = () => {
     const cardDetailChangeElems = document.querySelectorAll('.card-detail__change ');
@@ -148,14 +162,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderCrossSell = () => {
     const crossSellList = document.querySelector('.cross-sell__list');
 
-    const createCrossSellItem = (good) => {
+    const sort = (arr) => arr.sort(() => Math.random() - 0.5);
+
+    const createCrossSellItem = ({ photo, name, price }) => {
       const liItem = document.createElement('li');
       liItem.innerHTML = `
         <article class="cross-sell__item">
-          <img class="cross-sell__image" src="${good.photo}" alt="" />
-          <h3 class="cross-sell__title">${good.name}</h3>
-          <p class="cross-sell__price">${good.price}</p>
-          <div class="button button_buy cross-sell__button">Купить</div>
+          <img class="cross-sell__image" src="${photo}" alt="${name}" />
+          <h3 class="cross-sell__title">${name}</h3>
+          <p class="cross-sell__price">${price} ₽</p>
+          <button type="button" class="button button_buy cross-sell__button">Купить</button>
         </article>
       `;
 
@@ -163,7 +179,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const createCrossSellList = (goods) => {
-      goods.forEach((item) => {
+      const sortGoods = sort(goods);
+      const fourItems = sortGoods.slice(0, 4);
+
+      fourItems.forEach((item) => {
         crossSellList.append(createCrossSellItem(item));
       });
     };
@@ -175,4 +194,5 @@ document.addEventListener('DOMContentLoaded', () => {
   showCharacteristics();
   modal();
   renderCrossSell();
+  amenu('.header__menu', '.header-menu__list', '.header-menu__item', '.header-menu__burger');
 });
